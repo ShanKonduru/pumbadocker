@@ -34,7 +34,7 @@ RUN wget https://github.com/alexei-led/pumba/releases/download/0.9.7/pumba_linux
 COPY --from=builder /usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 # Set the script as the entrypoint and execute the SSH server in the foreground
-# ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Use CMD to start Pumba after the SSH server is running
 CMD ["./pumba", "--version"]
