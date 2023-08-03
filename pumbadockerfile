@@ -1,0 +1,40 @@
+# Stage 1: Copy the entrypoint.sh script
+FROM alpine:latest as builder
+
+# Copy the entrypoint.sh script to /usr/local/bin/entrypoint.sh
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+
+# Make the entrypoint script executable
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Stage 2: Final image with SSH server and Pumba
+FROM alpine:latest
+
+# Install necessary packages (including SSH server and wget)
+RUN apk update && \
+    apk add --no-cache openssh-server wget && \
+    echo "root:root" | chpasswd && \
+    adduser -D admin && \
+    echo "admin:admin" | chpasswd
+
+# Enable SSH service and generate host keys
+RUN ssh-keygen -A
+
+# Expose SSH port (default is 22)
+EXPOSE 22
+
+# Create a working directory
+WORKDIR /pumba
+
+# Download Pumba and make it executable
+RUN wget https://github.com/alexei-led/pumba/releases/download/0.9.7/pumba_linux_amd64 -O pumba && \
+    chmod +x pumba
+
+# Copy the entrypoint.sh script from the builder stage
+COPY --from=builder /usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint.sh
+
+# Set the script as the entrypoint and execute the SSH server in the foreground
+# ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+# Use CMD to start Pumba after the SSH server is running
+# CMD ["./pumba", "--version"]
